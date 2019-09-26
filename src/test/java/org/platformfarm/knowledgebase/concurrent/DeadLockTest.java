@@ -10,6 +10,35 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 
+/**
+ * It's a test that creates a deadlock on purpose.
+ *
+ *  Object A                                             Object B
+ * +-----------------------------------+                +-----------------------------------+
+ * | +-------------------------------+ |                | +-------------------------------+ |
+ * | |critical section               | |                | |critical section               | |
+ * | |                              <--------------------------------------+              | |
+ * | |                               | |                | |                |              | |
+ * | |               +------------------------------------>                |              | |
+ * | |               |               | |                | |                |              | |
+ * | +---------------|---------------+ |                | +----------------|--------------+ |
+ * +-----------------|-----------------+                +------------------|----------------+
+ *                   |                                                     |
+ *       +----------------------+                              +----------------------+
+ *       |                      |                              |                      |
+ *       |       Thread 1       |                              |      Thread 2        |
+ *       |                      |                              |                      |
+ *       +----------------------+                              +----------------------+
+ *
+ * Tread 1 가 Object A 의 임계영역에 진입을 한 후 임계영역을 탈출하지 않은 상태에서 Object B의 임계
+ * 영역에 진입하려 한다. 그런데 이때 이미 Thread 1는 Object B의 임계영역에 진입 한 상태가 되어
+ * Thread 1 은 Object B 의 임계역역 시작 지점에서 BLOCKED 된다. 이 상황에서 Object B의 임계영역에
+ * 진입한 Thread 2는 Thread 1이 Lock 을 확보한 Object A의 임계 영역을 진입하려 한다. 이 역시 BLOCKED
+ * 된다. 양 Thread 는 영원한 BLOCKED 상태에 들어갔다.
+ *
+ * >>> 이런 상태를 교착상태라고 한다. 또는 Dead Lock 이라고 한다.
+ *
+ */
 public class DeadLockTest {
 
     @Test
@@ -20,8 +49,8 @@ public class DeadLockTest {
         Shared s2 = new Shared();
 
         ExecutorService es = Executors.newFixedThreadPool(3);
-        Future<?> future1 = es.submit(new Thread1(s1, s2));
-        Future<?> future2 = es.submit(new Thread2(s1, s2));
+        Future<?> future1 = es.submit(new Task(s1, s2));
+        Future<?> future2 = es.submit(new Task(s2, s1));
 
         es.shutdown();
 
@@ -43,7 +72,8 @@ public class DeadLockTest {
 
     private void reportDeadLockThread() {
         ThreadMXBean bean = ManagementFactory.getThreadMXBean();
-        long[] threadIds = bean.findDeadlockedThreads(); // Returns null if no threads are deadlocked.
+        // Returns null if no threads are deadlocked.
+        long[] threadIds = bean.findDeadlockedThreads();
         if (threadIds != null) {
             ThreadInfo[] infos = bean.getThreadInfo(threadIds);
             for (ThreadInfo info : infos) {
@@ -53,77 +83,53 @@ public class DeadLockTest {
         }
     }
 
-}
-
-class Shared
-{
-    // first synchronized method
-    synchronized void test1(Shared s2)
+    static class Shared
     {
-        System.out.println("test1-begin");
-        ThreadUtil.sleep(1000);
+        // first synchronized method
+        synchronized void test1(Shared s2)
+        {
+            System.out.println("test1-begin");
+            ThreadUtil.sleep(1000);
 
-        // taking object lock of s2 enters
-        // into test2 method
-        s2.test2(this);
-        System.out.println("test1-end");
+            // taking object lock of s2 enters
+            // into test2 method
+            s2.test2(this);
+            System.out.println("test1-end");
+        }
+
+        // second synchronized method
+        synchronized void test2(Shared s1)
+        {
+            System.out.println("test2-begin");
+            ThreadUtil.sleep(1000);
+
+            // taking object lock of s1 enters
+            // into test1 method
+            s1.test1(this);
+            System.out.println("test2-end");
+        }
     }
 
-    // second synchronized method
-    synchronized void test2(Shared s1)
+
+    static class Task implements Runnable
     {
-        System.out.println("test2-begin");
-        ThreadUtil.sleep(1000);
+        private Shared s1;
+        private Shared s2;
 
-        // taking object lock of s1 enters
-        // into test1 method
-        s1.test1(this);
-        System.out.println("test2-end");
-    }
-}
+        // constructor to initialize fields
+        Task(Shared s1, Shared s2)
+        {
+            this.s1 = s1;
+            this.s2 = s2;
+        }
 
-
-class Thread1 extends Thread
-{
-    private Shared s1;
-    private Shared s2;
-
-    // constructor to initialize fields
-    public Thread1(Shared s1, Shared s2)
-    {
-        this.s1 = s1;
-        this.s2 = s2;
-    }
-
-    // run method to start a thread
-    @Override
-    public void run()
-    {
-        // taking object lock of s1 enters
-        // into test1 method
-        s1.test1(s2);
-    }
-}
-
-
-class Thread2 extends Thread
-{
-    private Shared s1;
-    private Shared s2;
-
-    // constructor to initialize fields
-    public Thread2(Shared s1, Shared s2)
-    {
-        this.s1 = s1;
-        this.s2 = s2;
-    }
-
-    // run method to start a thread
-    @Override
-    public void run()
-    {
-        // taking object lock of s2
-        // enters into test2 method
-        s2.test2(s1);
+        // run method to start a thread
+        @Override
+        public void run()
+        {
+            // taking object lock of s1 enters
+            // into test1 method
+            s1.test1(s2);
+        }
     }
 }
