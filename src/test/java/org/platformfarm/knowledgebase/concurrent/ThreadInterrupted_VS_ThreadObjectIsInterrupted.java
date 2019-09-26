@@ -18,7 +18,7 @@ public class ThreadInterrupted_VS_ThreadObjectIsInterrupted {
                     ThreadUtil.sleep(10);
                 }
                 System.out.println(
-                    String.format("%s >>> thread is Running, but terminate shortly. anyway current thread interrupted() is %s"
+                    String.format("%s >>> is terminate shortly. current thread interrupted() is %s"
                         , Thread.currentThread().getName(), Thread.interrupted()));
             }
         });
@@ -43,12 +43,13 @@ public class ThreadInterrupted_VS_ThreadObjectIsInterrupted {
             public void run() {
                 while (!Thread.currentThread().isInterrupted()) {
                     System.out.println(
-                        String.format("%s >>> thread is Running", Thread.currentThread().getName()));
+                        String.format("%s >>> thread is Running"
+                            , Thread.currentThread().getName()));
                     ThreadUtil.sleep(10);
                 }
 
                 System.out.println(
-                    String.format("%s >>> thread is Running, but terminate shortly. anyway current thread isInterrupted() is %s"
+                    String.format("%s >>> is terminate shortly. current thread isInterrupted() is %s"
                         , Thread.currentThread().getName(), Thread.currentThread().isInterrupted()));
             }
         });
@@ -56,7 +57,6 @@ public class ThreadInterrupted_VS_ThreadObjectIsInterrupted {
         t1.start();
         ThreadUtil.sleep(100);
         t1.interrupt();
-
 
         try {
             t1.join();

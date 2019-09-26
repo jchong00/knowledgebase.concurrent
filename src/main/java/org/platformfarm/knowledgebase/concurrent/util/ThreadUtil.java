@@ -3,7 +3,7 @@ package org.platformfarm.knowledgebase.concurrent.util;
 import java.util.Optional;
 import java.util.Set;
 
-public class ThreadUtil {
+public class ThreadUtil{
 
     private final static Object lockOfGetName = new Object();
 
@@ -37,3 +37,4 @@ public class ThreadUtil {
     }
 
 }
+
