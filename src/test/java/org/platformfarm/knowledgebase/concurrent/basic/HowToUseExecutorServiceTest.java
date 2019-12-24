@@ -16,6 +16,7 @@ public class HowToUseExecutorServiceTest {
 
     @Test
     public void newCachedThreadPoolExam() {
+
         HowToUseExecutorService testTarget = new HowToUseExecutorService();
         testTarget.newCachedThreadPoolExam();
     }
