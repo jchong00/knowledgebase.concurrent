@@ -19,6 +19,7 @@ public class CellularAutomata {
         for (int i = 0; i < count; i++)
             workers[i] = new Worker(mainBoard.getSubBoard(count, i));
     }
+
     private class Worker implements Runnable {
         private final Board board;
         public Worker(Board board) { this.board = board; }

@@ -3,16 +3,13 @@ package org.platformfarm.knowledgebase.concurrent;
 import static java.lang.Thread.State.TIMED_WAITING;
 import static java.lang.Thread.State.WAITING;
 
-import org.platformfarm.knowledgebase.concurrent.util.ThreadUtil;import java.lang.management.ManagementFactory;
+import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
 import java.time.Clock;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.Test;
+import org.platformfarm.knowledgebase.concurrent.util.ThreadUtil;
 
 /**
  *
@@ -189,7 +186,7 @@ public class ThreadWaitAndNotifyTest {
 
 
         //
-        // 사실 아래코드 같이 Main-Thread 까지 wait 를 하면 이 프로그램 자체는 DeadLock 상태에 빠지
+        // 사실 아래코드 같이 Main-Thread 까지 wait 를 하면 이 프로그램 자체는 Live Lock 상태에 빠지
         // 게 된다.
         //
 
@@ -310,7 +307,6 @@ public class ThreadWaitAndNotifyTest {
                         , Thread.currentThread().getName()));
                 }
 
-
                 i++;
                 if (i > 5) {
                     testThreads[1].interrupt();
@@ -420,69 +416,6 @@ public class ThreadWaitAndNotifyTest {
         }
 
         System.out.println("CHECK POINT >>>> after wait() in main thread.");
-    }
-
-    @Test
-    public void whatIsDeadLock() {
-
-        ExecutorService es = Executors.newFixedThreadPool(3);
-        Future<?> future1 = es.submit(new DeadLockTask());
-        Future<?> future2 = es.submit(new DeadLockTask());
-
-        es.shutdown();
-
-        try {
-            int awaitCnt = 0;
-            while (!es.awaitTermination(10, TimeUnit.SECONDS)) {
-                System.out.println("Not a terminate threads. ");
-                reportDeadLockThread();
-                awaitCnt++;
-                if ( awaitCnt > 3 && !future1.isCancelled() && !future2.isCancelled() ) {
-                    future1.cancel(true);
-                    future2.cancel(true);
-                }
-            }
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-
-    }
-
-    static class DeadLockTask implements Runnable {
-
-        boolean stopFlag = false;
-
-        /**
-         * When an object implementing interface <code>Runnable</code> is used to create a thread,
-         * starting the thread causes the object's
-         * <code>run</code> method to be called in that separately executing
-         * thread.
-         * <p>
-         * The general contract of the method <code>run</code> is that it may take any action
-         * whatsoever.
-         *
-         * @see Thread#run()
-         */
-        @Override
-        public void run() {
-            synchronized (DeadLockTask.class) {
-                while (!Thread.currentThread().isInterrupted()) {
-                    if (stopFlag) {
-                        break;
-                    }
-                    System.out.println(String.format("Do something in %s task!!"
-                        , Thread.currentThread().getName()));
-                    try {
-                        Thread.sleep(10);
-                        System.out.println("Wait released...");
-                    } catch (InterruptedException e) {
-                        System.out.println(String.format("%s Thread is interrupted...."
-                            , Thread.currentThread().getName()));
-                        Thread.currentThread().interrupt();
-                    }
-                }
-            }
-        }
     }
 }
 
