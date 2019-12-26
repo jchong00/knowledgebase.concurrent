@@ -1,10 +1,12 @@
 package org.platformfarm.knowledgebase.concurrent.basic;
 
+import java.util.Map;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import org.platformfarm.knowledgebase.concurrent.GlobalUnhandledExceptionHandler;
 import org.platformfarm.knowledgebase.concurrent.GlobalUnhandledExceptionListener;
@@ -18,20 +20,28 @@ import org.platformfarm.knowledgebase.concurrent.GlobalUnhandledExceptionListene
 public class HowToUseExecutorService {
 
     private static String NEW_LINE = System.lineSeparator();
-    private static String lastExceptionThreadName;
+    private static Map<String, String> lastExceptionThreadName = new ConcurrentHashMap<>();
 
     static {
 
+        lastExceptionThreadName.put("BySubmit-Thread_", "");
+        lastExceptionThreadName.put("ByExecute-Thread_", "");
+
         GlobalUnhandledExceptionHandler globalUnhandledExceptionHandler
             = new GlobalUnhandledExceptionHandler(
-                new GlobalUnhandledExceptionListener() {
-                @Override
-                public void occurredException(Thread t, Throwable e) {
-                    lastExceptionThreadName = t.getName();
-                    String errMsg = "### caught exception in static constructor. ###" + NEW_LINE;
-                    errMsg += "Occur exception... thread name: " + t.getName() + NEW_LINE;
-                    System.out.println(errMsg);
+            (t, e) -> {
+
+                String threadName = t.getName();
+
+                if ( threadName.contains("BySubmit-Thread_") ) {
+                    lastExceptionThreadName.replace("BySubmit-Thread_", threadName);
+                } else if (threadName.contains("ByExecute-Thread_")) {
+                    lastExceptionThreadName.replace("ByExecute-Thread_", threadName);
                 }
+
+                String errMsg = "### caught exception in static constructor. ###" + NEW_LINE;
+                errMsg += "Occur exception... thread name: " + t.getName() + NEW_LINE;
+                System.out.println(errMsg);
             });
 
         Thread.setDefaultUncaughtExceptionHandler(globalUnhandledExceptionHandler);
@@ -61,12 +71,21 @@ public class HowToUseExecutorService {
      */
     public String throwsExceptionRunnableTaskUsingSubmit() {
 
-        lastExceptionThreadName = "";
+        lastExceptionThreadName.replace("BySubmit-Thread_", "");
 
-        ExecutorService es = Executors.newFixedThreadPool(5);
+        ExecutorService es = Executors.newFixedThreadPool(5, new ThreadFactory() {
+            private int counter = 1;
+            @Override
+            public Thread newThread(Runnable runnable) {
+                Thread t = new Thread(runnable, "BySubmit-Thread_" + counter);
+                counter++;
+                return t;
+            }
+        });
         for(int i = 0; i < 10 ; i++) {
             Future<?> future = es.submit(new ThrowsExceptionRunnableTask());
         }
+
         es.shutdown();
 
         try {
@@ -75,7 +94,7 @@ public class HowToUseExecutorService {
             e.printStackTrace();
         }
 
-        return lastExceptionThreadName;
+        return lastExceptionThreadName.get("BySubmit-Thread_");
 
     }
 
@@ -86,9 +105,18 @@ public class HowToUseExecutorService {
      */
     public String throwsExceptionRunnableTaskUsingExecute() {
 
-        lastExceptionThreadName = "";
+        lastExceptionThreadName.replace("ByExecute-Thread_", "");
 
-        ExecutorService es = Executors.newFixedThreadPool(5);
+        ExecutorService es = Executors.newFixedThreadPool(5, new ThreadFactory() {
+            private int counter = 1;
+            @Override
+            public Thread newThread(Runnable runnable) {
+                Thread t = new Thread(runnable, "ByExecute-Thread_" + counter);
+                counter++;
+                return t;
+            }
+        });
+
         for(int i = 0; i < 10 ; i++) {
             es.execute(new ThrowsExceptionRunnableTask());
         }
@@ -101,7 +129,7 @@ public class HowToUseExecutorService {
             e.printStackTrace();
         }
 
-        return lastExceptionThreadName;
+        return lastExceptionThreadName.get("ByExecute-Thread_");
     }
 
     /**
@@ -138,7 +166,7 @@ public class HowToUseExecutorService {
     static class SomeCallableTask implements Callable<Integer> {
 
         @Override
-        public Integer call() throws Exception {
+        public Integer call() {
             return 0;
         }
     }
