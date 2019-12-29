@@ -98,6 +98,36 @@ public class HowToUseExecutorService {
 
     }
 
+    public String throwsExceptionRunnableTaskUsingSubmit2() {
+
+        lastExceptionThreadName.replace("BySubmit-Thread_", "");
+
+        ExecutorService es = new ExecptionHandlingThreadPoolExecutor(5, 5, new ThreadFactory() {
+            private int counter = 1;
+            @Override
+            public Thread newThread(Runnable runnable) {
+                Thread t = new Thread(runnable, "BySubmit-Thread_" + counter);
+                counter++;
+                return t;
+            }
+        });
+
+        for(int i = 0; i < 10 ; i++) {
+            Future<?> future = es.submit(new ThrowsExceptionRunnableTask());
+        }
+
+        es.shutdown();
+
+        try {
+            es.awaitTermination(30, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        return lastExceptionThreadName.get("BySubmit-Thread_");
+
+    }
+
     /**
      *  execute 의 실행 대상이 Exception 을 throw 하면 해당 thread 가 깨진다.
      *  해서 'pool-1-thread-10' 라는 이름의 thread 까지 생성된다.
