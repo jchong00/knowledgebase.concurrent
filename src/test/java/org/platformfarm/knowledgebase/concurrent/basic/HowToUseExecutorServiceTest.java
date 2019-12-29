@@ -35,11 +35,16 @@ public class HowToUseExecutorServiceTest {
         Assert.assertEquals("", last);
     }
 
+    /**
+     *  원래는 이 테스트 함수도 대상 함수의 내부에서 thread 를 다룰때 submit 을 사용하므로 예외가
+     *  발생하면 먹어 치워야 한다. 그러나 ThreadPoolExecutor 를 확장하여 오류가 발생하면 Runtime -
+     *  Exception 을 발생하게 했다. 따라서 마치 execute 로 스레드를 실행한 것 같은 효과를 갖는다.
+     */
     @Test
     public void executorSubmitUsingCustomThreadPoolExecutor() {
         HowToUseExecutorService testTarget = new HowToUseExecutorService();
         String last = testTarget.throwsExceptionRunnableTaskUsingSubmit2();
-        Assert.assertEquals("", last);
+        Assert.assertNotEquals("", last);
     }
 
 
@@ -54,6 +59,17 @@ public class HowToUseExecutorServiceTest {
 
         HowToUseExecutorService testTarget = new HowToUseExecutorService();
         String last = testTarget.throwsExceptionRunnableTaskUsingExecute();
+        Assert.assertNotEquals("", last);
+
+    }
+
+    /**
+     */
+    @Test
+    public void executorExecuteUsingCustomThreadPoolExecutor() {
+
+        HowToUseExecutorService testTarget = new HowToUseExecutorService();
+        String last = testTarget.throwsExceptionRunnableTaskUsingExecute2();
         Assert.assertNotEquals("", last);
 
     }

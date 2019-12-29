@@ -8,9 +8,9 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-public class ExecptionHandlingThreadPoolExecutor extends ThreadPoolExecutor {
+public class ExceptionHandlingThreadPoolExecutor extends ThreadPoolExecutor {
 
-    public ExecptionHandlingThreadPoolExecutor(int corePoolSize, int maximumPoolSize, ThreadFactory tf) {
+    public ExceptionHandlingThreadPoolExecutor(int corePoolSize, int maximumPoolSize, ThreadFactory tf) {
         super(corePoolSize, maximumPoolSize, 0, TimeUnit.SECONDS, new LinkedBlockingDeque<>(), tf);
     }
 

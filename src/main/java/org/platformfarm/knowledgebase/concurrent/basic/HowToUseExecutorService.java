@@ -9,7 +9,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import org.platformfarm.knowledgebase.concurrent.GlobalUnhandledExceptionHandler;
-import org.platformfarm.knowledgebase.concurrent.GlobalUnhandledExceptionListener;
 
 
 /**
@@ -26,6 +25,8 @@ public class HowToUseExecutorService {
 
         lastExceptionThreadName.put("BySubmit-Thread_", "");
         lastExceptionThreadName.put("ByExecute-Thread_", "");
+        lastExceptionThreadName.put("BySubmit-Thread_2", "");
+        lastExceptionThreadName.put("ByExecute-Thread_2", "");
 
         GlobalUnhandledExceptionHandler globalUnhandledExceptionHandler
             = new GlobalUnhandledExceptionHandler(
@@ -36,6 +37,10 @@ public class HowToUseExecutorService {
                 if ( threadName.contains("BySubmit-Thread_") ) {
                     lastExceptionThreadName.replace("BySubmit-Thread_", threadName);
                 } else if (threadName.contains("ByExecute-Thread_")) {
+                    lastExceptionThreadName.replace("ByExecute-Thread_", threadName);
+                } else if ( threadName.contains("BySubmit-Thread2_") ) {
+                    lastExceptionThreadName.replace("BySubmit-Thread_", threadName);
+                } else if (threadName.contains("ByExecute-Thread2_")) {
                     lastExceptionThreadName.replace("ByExecute-Thread_", threadName);
                 }
 
@@ -98,22 +103,30 @@ public class HowToUseExecutorService {
 
     }
 
+    /**
+     *  submit 의 실행 대상이 Exception 을 throw 하면 해당 작업은 거기서 종료가 되고
+     *  thread 는 재활용 된다. pool-1-thread-5' 라는 이름의 thread 까지 생성된다.
+     *  Exception 은 전파되지 않는다.
+     *
+     *  throwsExceptionRunnableTaskUsingSubmit 와 동일한데 다만 예외 처리를 위해서
+     *  ExceptionHandlingThreadPoolExecutor 를 사용하였다.
+     */
     public String throwsExceptionRunnableTaskUsingSubmit2() {
 
-        lastExceptionThreadName.replace("BySubmit-Thread_", "");
+        lastExceptionThreadName.replace("BySubmit-Thread2_", "");
 
-        ExecutorService es = new ExecptionHandlingThreadPoolExecutor(5, 5, new ThreadFactory() {
+        ExecutorService es = new ExceptionHandlingThreadPoolExecutor(5, 5, new ThreadFactory() {
             private int counter = 1;
             @Override
             public Thread newThread(Runnable runnable) {
-                Thread t = new Thread(runnable, "BySubmit-Thread_" + counter);
+                Thread t = new Thread(runnable, "BySubmit-Thread2_" + counter);
                 counter++;
                 return t;
             }
         });
 
         for(int i = 0; i < 10 ; i++) {
-            Future<?> future = es.submit(new ThrowsExceptionRunnableTask());
+            es.submit(new ThrowsExceptionRunnableTask());
         }
 
         es.shutdown();
@@ -124,7 +137,7 @@ public class HowToUseExecutorService {
             e.printStackTrace();
         }
 
-        return lastExceptionThreadName.get("BySubmit-Thread_");
+        return lastExceptionThreadName.get("BySubmit-Thread2_");
 
     }
 
@@ -160,6 +173,34 @@ public class HowToUseExecutorService {
         }
 
         return lastExceptionThreadName.get("ByExecute-Thread_");
+    }
+
+    public String throwsExceptionRunnableTaskUsingExecute2() {
+        lastExceptionThreadName.replace("ByExecute-Thread2_", "");
+
+        ExecutorService es = new ExceptionHandlingThreadPoolExecutor (5,5, new ThreadFactory() {
+            private int counter = 1;
+            @Override
+            public Thread newThread(Runnable runnable) {
+                Thread t = new Thread(runnable, "ByExecute-Thread2_" + counter);
+                counter++;
+                return t;
+            }
+        });
+
+        for(int i = 0; i < 10 ; i++) {
+            es.execute(new ThrowsExceptionRunnableTask());
+        }
+
+        es.shutdown();
+
+        try {
+            es.awaitTermination(30, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        return lastExceptionThreadName.get("ByExecute-Thread2_");
     }
 
     /**
