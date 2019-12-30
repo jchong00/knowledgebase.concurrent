@@ -12,24 +12,35 @@ import org.junit.Test;
 
 public class FolderProcessorTest {
 
+    private final String USER_HOME_DIR = System.getProperty("user.home");
+
+    /**
+     *  ForkJoinPool 을 사용하는 class 인 FolderProcessor 를 테스트 한다.
+     *
+     *
+     *
+     */
     @Test
     public void findLogFilesByForkJoinPool() {
         ForkJoinPool pool = new ForkJoinPool();
-        FolderProcessor system = new FolderProcessor("C:\\", "log");
+        FolderProcessor system = new FolderProcessor(USER_HOME_DIR, "log");
         pool.submit(system);
 
         do {
-            System.out.printf("******************************************\n");
-            System.out.printf("Main: Parallelism: %d\n", pool.getParallelism());
-            System.out.printf("Main: Active Threads: %d\n", pool.getActiveThreadCount());
-            System.out.printf("Main: Task Count: %d\n", pool.getQueuedTaskCount());
-            System.out.printf("Main: Steal Count: %d\n", pool.getStealCount());
-            System.out.printf("******************************************\n");
+            // Thread pool 의 상태를 모니터링 함
+            System.out.print("****************************************************** \n");
+            System.out.printf("병렬처리 (최대)수 : %d\n", pool.getParallelism());
+            System.out.printf("활성화된 스레드 수: %d\n", pool.getActiveThreadCount());
+            System.out.printf("큐내의 작업 수: %d\n", pool.getQueuedTaskCount());
+            System.out.printf("Pool 전체에서 빼앗긴 작업 수: %d\n", pool.getStealCount());
+            System.out.print("****************************************************** \n");
+
             try {
                 TimeUnit.SECONDS.sleep(1);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
+
         } while (!system.isDone());
 
         pool.shutdown();
@@ -45,7 +56,7 @@ public class FolderProcessorTest {
 
     @Test
     public void findLogFilesBySingleThread() {
-        SingleThreadFolderProcessor p = new SingleThreadFolderProcessor("C:\\", "log");
+        SingleThreadFolderProcessor p = new SingleThreadFolderProcessor(USER_HOME_DIR, "log");
         List<String> results = p.compute();
 
         System.out.printf("Total target extension Files: %d \n", results.size());

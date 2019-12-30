@@ -1,9 +1,10 @@
 package org.platformfarm.knowledgebase.concurrent;
 
+import java.lang.Thread.UncaughtExceptionHandler;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-public class GlobalUnhandledExceptionHandler implements Thread.UncaughtExceptionHandler {
+public class GlobalUnhandledExceptionHandler implements UncaughtExceptionHandler {
 
     private List<GlobalUnhandledExceptionListener> globalUnhandledExceptionListeners
         = new CopyOnWriteArrayList<>();
