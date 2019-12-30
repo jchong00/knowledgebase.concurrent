@@ -1,12 +1,14 @@
 package org.platformfarm.knowledgebase.concurrent.basic;
 
-import static org.junit.Assert.*;
-
 import org.junit.Assert;
 import org.junit.Test;
 
 public class HowToUseExecutorServiceTest {
 
+    /**
+     *  고정된 크기의 thread pool 을 이용하는 테스트 케이스
+     *
+     */
     @Test
     public void newFixedThreadPoolExam() {
 
@@ -15,6 +17,10 @@ public class HowToUseExecutorServiceTest {
 
     }
 
+    /**
+     *  요청된 작업의 수 만큼 thread 수를 늘렸다가 작업 요청이 없으면 줄이는 thread pool 을 이용하는
+     *  테스트 케이스
+     */
     @Test
     public void newCachedThreadPoolExam() {
 
@@ -51,8 +57,8 @@ public class HowToUseExecutorServiceTest {
     /**
      * 예외가 발생하면 해당 Thread 는 깨진다.
      *
-     * 테스트는 execute 가 예외를 JVM 에 파생을 시키기 때문에 Feedback 이 전달되어 함수의 반환
-     * 값인 예외를 던지 마지막 Thread 이름이 빈 값이 아닌지 단정한다.
+     * 테스트는 execute 가 예외를 JVM 에 전파 시키기 때문에 Feedback 이 전달되어 함수의 반환
+     * 값인 예외를 던진 마지막 Thread 이름이 빈 값이 아닌지 단정한다.
      */
     @Test
     public void executorExecute() {
@@ -64,6 +70,14 @@ public class HowToUseExecutorServiceTest {
     }
 
     /**
+     * 예외가 발생하면 해당 Thread 는 깨진다.
+     *
+     * 테스트는 execute 가 예외를 JVM 에 파생을 시키기 때문에 Feedback 이 전달되어 함수의 반환
+     * 값인 예외를 던진 마지막 Thread 이름이 빈 값이 아닌지 단정한다.
+     *
+     * 상기 함수와 동일한 처리를 하고 동일한 결과를 얻는다. 이 테스트는 Custom 된 ThreadPoolExecutor
+     * 를 사용했을 때 afterExecute override 에서 예외처리가 어떻게 되는지 확인하기 위함이다.
+     *
      */
     @Test
     public void executorExecuteUsingCustomThreadPoolExecutor() {
@@ -73,6 +87,4 @@ public class HowToUseExecutorServiceTest {
         Assert.assertNotEquals("", last);
 
     }
-
-
 }
