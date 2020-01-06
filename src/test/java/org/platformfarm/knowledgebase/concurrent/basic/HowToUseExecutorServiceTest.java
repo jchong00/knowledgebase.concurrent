@@ -6,14 +6,39 @@ import org.junit.Test;
 public class HowToUseExecutorServiceTest {
 
     /**
-     *  고정된 크기의 thread pool 을 이용하는 테스트 케이스
+     *  고정된 크기의 thread pool 을 이용하는 테스트 케이스, Submit 를 사용한다.
      *
      */
     @Test
-    public void newFixedThreadPoolExam() {
+    public void newFixedThreadPoolExamBySubmit() {
 
         HowToUseExecutorService testTarget = new HowToUseExecutorService();
-        testTarget.newFixedThreadPoolExam();
+        testTarget.newFixedThreadPoolExamBySubmit();
+
+    }
+
+    /**
+     *  고정된 크기의 thread pool 을 이용하는 테스트 케이스, Submit 를 사용한다.
+     *
+     */
+    @Test
+    public void newFixedThreadPoolExamBySubmitAndGetByFuture() {
+
+        HowToUseExecutorService testTarget = new HowToUseExecutorService();
+        int test = testTarget.newFixedThreadPoolExamBySubmitAndFuture();
+        Assert.assertEquals(0, test);
+
+    }
+
+    /**
+     *  고정된 크기의 thread pool 을 이용하는 테스트 케이스, Execute 를 사용한다.
+     *
+     */
+    @Test
+    public void newFixedThreadPoolExamByExecute() {
+
+        HowToUseExecutorService testTarget = new HowToUseExecutorService();
+        testTarget.newFixedThreadPoolExamByExecute();
 
     }
 
@@ -51,6 +76,15 @@ public class HowToUseExecutorServiceTest {
         HowToUseExecutorService testTarget = new HowToUseExecutorService();
         String last = testTarget.throwsExceptionRunnableTaskUsingSubmit2();
         Assert.assertNotEquals("", last);
+    }
+
+    /**
+     *
+     */
+    @Test
+    public void executorSubmitUsingGetExceptionCheck() {
+        HowToUseExecutorService testTarget = new HowToUseExecutorService();
+        testTarget.throwsExceptionRunnableTaskUsingSubmit3();
     }
 
 
