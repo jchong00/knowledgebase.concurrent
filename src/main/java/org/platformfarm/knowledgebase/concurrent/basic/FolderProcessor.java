@@ -24,7 +24,7 @@ public class FolderProcessor extends RecursiveTask<List<String>> {
         File content[] = file.listFiles();
         if (content != null) {
             for (File value : content) {
-                if (value.isDirectory()) {
+                if (value.isDirectory()) { // 파일 객체가 디렉터리인 경우 작업을 분할 한다.
                     FolderProcessor task = new FolderProcessor(value.getAbsolutePath(), extension);
                     task.fork();
                     tasks.add(task);

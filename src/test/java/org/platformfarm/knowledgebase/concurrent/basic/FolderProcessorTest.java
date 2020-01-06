@@ -12,7 +12,7 @@ import org.junit.Test;
 
 public class FolderProcessorTest {
 
-    private final String USER_HOME_DIR = System.getProperty("user.home");
+    private final String USER_HOME_DIR = "C:\\DevWorks\\Sources\\tomcat-9.0.27\\java\\javax"; //System.getProperty("user.home");
 
     /**
      *  ForkJoinPool 을 사용하는 class 인 FolderProcessor 를 테스트 한다.
@@ -23,7 +23,7 @@ public class FolderProcessorTest {
     @Test
     public void findLogFilesByForkJoinPool() {
         ForkJoinPool pool = new ForkJoinPool();
-        FolderProcessor system = new FolderProcessor(USER_HOME_DIR, "log");
+        FolderProcessor system = new FolderProcessor(USER_HOME_DIR, "java");
         pool.submit(system);
 
         do {
@@ -70,7 +70,7 @@ public class FolderProcessorTest {
 
         List<String> results = new ArrayList<String>();
         ExecutorService es = Executors.newFixedThreadPool(4);
-        File file = new File("C:\\");
+        File file = new File("USER_HOME_DIR");
         File[] content = file.listFiles();
         Future<?> future = null;
         if (content != null) {
