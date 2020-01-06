@@ -3,6 +3,7 @@ package org.platformfarm.knowledgebase.concurrent.basic;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -12,7 +13,7 @@ import org.platformfarm.knowledgebase.concurrent.GlobalUnhandledExceptionHandler
 
 
 /**
- * ExecutorService를 사용하는 방법에 대한 예제, 주의 사항등을 정리한 Class
+ * ExecutorService 를 사용하는 방법에 대한 예제, 주의 사항등을 정리한 Class
  *
  *
  */
@@ -52,11 +53,60 @@ public class HowToUseExecutorService {
         Thread.setDefaultUncaughtExceptionHandler(globalUnhandledExceptionHandler);
     }
 
-    public void newFixedThreadPoolExam() {
-
+    public void newFixedThreadPoolExamBySubmit() {
         ExecutorService es = Executors.newFixedThreadPool(5);
         for(int i = 0; i < 10 ; i++) {
             es.submit(new SomeRunnableTask());
+        }
+
+        es.shutdown();
+
+        while (!es.isTerminated()) {
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public int newFixedThreadPoolExamBySubmitAndFuture() {
+        ExecutorService es = Executors.newFixedThreadPool(5);
+        Future<Integer> future = es.submit(new SomeCallableTask());
+        es.shutdown();
+        while (!future.isDone()) {
+            try {
+                // 이 스레드에서 다른 작업을 수행하는 것을 대신해 아래와 같이 sleep 을 둔다.
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
+        int result = -1;
+        try {
+            result = future.get();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
+
+    public void newFixedThreadPoolExamByExecute() {
+        ExecutorService es = Executors.newFixedThreadPool(5);
+        for(int i = 0; i < 10 ; i++) {
+            es.execute(new SomeRunnableTask());
+        }
+        es.shutdown();
+
+        while (!es.isTerminated()) {
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -69,9 +119,8 @@ public class HowToUseExecutorService {
     }
 
     /**
-     *  submit 의 실행 대상이 Exception 을 throw 하면 해당 작업은 거기서 종료가 되고
-     *  thread 는 재활용 된다. pool-1-thread-5' 라는 이름의 thread 까지 생성된다.
-     *  Exception 은 전파되지 않는다.
+     *  submit 의 실행 대상이 Exception 을 throw 하면 해당 작업은 거기서 종료가 되고 thread 는 재활
+     *  용 된다. pool-1-thread-5' 라는 이름의 thread 까지 생성된다. Exception 은 전파되지 않는다.
      *
      */
     public String throwsExceptionRunnableTaskUsingSubmit() {
@@ -139,6 +188,59 @@ public class HowToUseExecutorService {
 
         return lastExceptionThreadName.get("BySubmit-Thread2_");
 
+    }
+
+    public void throwsExceptionRunnableTaskUsingSubmit3() {
+
+        ExecutorService es = Executors.newFixedThreadPool(5, new ThreadFactory() {
+            private int counter = 1;
+            @Override
+            public Thread newThread(Runnable runnable) {
+                Thread t = new Thread(runnable, "BySubmit-Thread2_" + counter);
+                counter++;
+                return t;
+            }
+        });
+
+        Future<?> [] futures = new Future[10];
+
+        for(int i = 0; i < 10 ; i++) {
+            futures[i] = es.submit(new ThrowsExceptionRunnableTask());
+        }
+
+        es.shutdown();
+
+        while (!isAllFutureDone(futures)) {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
+        for(int i = 0; i < 10 ; i++) {
+            try {
+                futures[i].get();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+            }
+        }
+
+        try {
+            es.awaitTermination(30, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private boolean isAllFutureDone (Future<?> [] futures) {
+        boolean result = false;
+        for(Future<?> f : futures ) {
+            result |= f.isDone();
+        }
+        return result;
     }
 
     /**
@@ -238,6 +340,7 @@ public class HowToUseExecutorService {
 
         @Override
         public Integer call() {
+            System.out.println("Current thread name: " + Thread.currentThread().getName());
             return 0;
         }
     }
