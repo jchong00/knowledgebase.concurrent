@@ -164,7 +164,7 @@ public class HowToUseExecutorService {
 
         lastExceptionThreadName.replace("BySubmit-Thread2_", "");
 
-        ExecutorService es = ExExecutors.newFixedThreadPool(5, new ThreadFactory() {
+        ExecutorService es = CustomExecutors.newFixedThreadPool(5, new ThreadFactory() {
             private int counter = 1;
             @Override
             public Thread newThread(Runnable runnable) {
@@ -280,7 +280,7 @@ public class HowToUseExecutorService {
     public String throwsExceptionRunnableTaskUsingExecute2() {
         lastExceptionThreadName.replace("ByExecute-Thread2_", "");
 
-        ExecutorService es = ExExecutors.newFixedThreadPool(5, new ThreadFactory() {
+        ExecutorService es = CustomExecutors.newFixedThreadPool(5, new ThreadFactory() {
             private int counter = 1;
             @Override
             public Thread newThread(Runnable runnable) {
