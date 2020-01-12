@@ -76,7 +76,11 @@ public class JavaSourceAnalyzer {
                 } else if (codeLine.contains("interface "+ justName)) {
                     result = "I";
                     break;
+                } else if (codeLine.contains("enum "+ justName)) {
+                    result = "E";
+                    break;
                 }
+
 
             }
         }
