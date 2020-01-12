@@ -1,4 +1,4 @@
-package org.platformfarm.knowledgebase.concurrent.basic;
+package org.platformfarm.knowledgebase.concurrent.threadpool;
 
 import java.io.File;
 import java.io.FileReader;
@@ -8,6 +8,7 @@ import java.util.Scanner;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.TimeUnit;
 import org.junit.Test;
+import org.platformfarm.knowledgebase.concurrent.threadpool.FolderProcessor;
 
 public class JavaSourceAnalyzer {
 

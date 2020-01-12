@@ -1,4 +1,4 @@
-package org.platformfarm.knowledgebase.concurrent.basic;
+package org.platformfarm.knowledgebase.concurrent.threadpool;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadFactory;

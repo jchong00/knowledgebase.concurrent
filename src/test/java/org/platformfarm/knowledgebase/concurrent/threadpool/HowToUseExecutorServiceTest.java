@@ -1,7 +1,8 @@
-package org.platformfarm.knowledgebase.concurrent.basic;
+package org.platformfarm.knowledgebase.concurrent.threadpool;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.platformfarm.knowledgebase.concurrent.threadpool.HowToUseExecutorService;
 
 public class HowToUseExecutorServiceTest {
 

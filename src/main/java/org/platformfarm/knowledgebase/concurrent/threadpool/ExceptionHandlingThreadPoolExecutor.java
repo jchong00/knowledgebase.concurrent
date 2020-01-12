@@ -1,4 +1,4 @@
-package org.platformfarm.knowledgebase.concurrent.basic;
+package org.platformfarm.knowledgebase.concurrent.threadpool;
 
 import java.util.Date;
 import java.util.concurrent.ExecutionException;
@@ -38,7 +38,7 @@ public class ExceptionHandlingThreadPoolExecutor extends ThreadPoolExecutor {
                 e.printStackTrace();
             } catch (ExecutionException e) {
                 Date currentDate = new Date();
-                // get 할 때 혹여 Lock 이 있을까 해서 시가을 측정해봤다. 0 이다.
+                // get 할 때 혹여 Lock 이 있을까 해서 시간을 측정해봤다. 0 이다.
                 long gap = currentDate.getTime() - startDate.getTime();
                 System.out.println("In AfterExecute ... " + gap);
                 throw new RuntimeException(e);

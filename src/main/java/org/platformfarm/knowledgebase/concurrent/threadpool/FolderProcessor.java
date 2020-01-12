@@ -1,4 +1,4 @@
-package org.platformfarm.knowledgebase.concurrent.basic;
+package org.platformfarm.knowledgebase.concurrent.threadpool;
 
 import java.io.File;
 import java.util.ArrayList;

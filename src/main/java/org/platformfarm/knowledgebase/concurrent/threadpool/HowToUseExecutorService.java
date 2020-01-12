@@ -1,4 +1,4 @@
-package org.platformfarm.knowledgebase.concurrent.basic;
+package org.platformfarm.knowledgebase.concurrent.threadpool;
 
 import java.util.Map;
 import java.util.concurrent.Callable;
