@@ -8,14 +8,13 @@ import java.util.Scanner;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.TimeUnit;
 import org.junit.Test;
-import org.platformfarm.knowledgebase.concurrent.threadpool.FolderProcessor;
 
 public class JavaSourceAnalyzer {
 
     @Test
     public void findJavaFilesByForkJoinPool() {
         ForkJoinPool pool = new ForkJoinPool();
-        FolderProcessor system = new FolderProcessor("C:\\DevWorks\\Sources\\tomcat-9.0.27\\java\\javax", "java");
+        DirectoryTraversalTask system = new DirectoryTraversalTask("C:\\DevWorks\\Sources\\tomcat-9.0.27\\java\\javax", "java");
         pool.submit(system);
 
         do {

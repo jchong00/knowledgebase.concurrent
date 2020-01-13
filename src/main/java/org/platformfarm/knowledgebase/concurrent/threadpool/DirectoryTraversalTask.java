@@ -5,13 +5,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.RecursiveTask;
 
-public class FolderProcessor extends RecursiveTask<List<String>> {
+/**
+ * 디렉터리를 순회하면서 소속된 파일의 목록을 구하는 Task 정의
+ *
+ */
+public class DirectoryTraversalTask extends RecursiveTask<List<String>> {
 
     private static final long serialVersionUID = 1L;
     private final String path;
     private final String extension;
 
-    public FolderProcessor(String path, String extension) {
+    public DirectoryTraversalTask(String path, String extension) {
         this.path = path;
         this.extension = extension;
     }
@@ -19,13 +23,13 @@ public class FolderProcessor extends RecursiveTask<List<String>> {
     @Override
     protected List<String> compute() {
         List<String> list = new ArrayList<String>();
-        List<FolderProcessor> tasks = new ArrayList<FolderProcessor>();
+        List<DirectoryTraversalTask> tasks = new ArrayList<DirectoryTraversalTask>();
         File file = new File(path);
         File content[] = file.listFiles();
         if (content != null) {
             for (File value : content) {
                 if (value.isDirectory()) { // 파일 객체가 디렉터리인 경우 작업을 분할 한다.
-                    FolderProcessor task = new FolderProcessor(value.getAbsolutePath(), extension);
+                    DirectoryTraversalTask task = new DirectoryTraversalTask(value.getAbsolutePath(), extension);
                     task.fork();
                     tasks.add(task);
                 }
@@ -42,8 +46,8 @@ public class FolderProcessor extends RecursiveTask<List<String>> {
         return list;
     }
 
-    private void addResultsFromTasks(List<String> list, List<FolderProcessor> tasks) {
-        for (FolderProcessor item : tasks) {
+    private void addResultsFromTasks(List<String> list, List<DirectoryTraversalTask> tasks) {
+        for (DirectoryTraversalTask item : tasks) {
             list.addAll(item.join());
         }
     }

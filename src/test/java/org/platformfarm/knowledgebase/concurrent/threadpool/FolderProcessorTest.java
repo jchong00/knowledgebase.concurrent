@@ -23,7 +23,7 @@ public class FolderProcessorTest {
     @Test
     public void findLogFilesByForkJoinPool() {
         ForkJoinPool pool = new ForkJoinPool();
-        FolderProcessor system = new FolderProcessor(USER_HOME_DIR, "java");
+        DirectoryTraversalTask system = new DirectoryTraversalTask(USER_HOME_DIR, "java");
         pool.submit(system);
 
         do {
